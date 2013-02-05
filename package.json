@@ -1,7 +1,7 @@
 {
     "name": "where-parser",
     "homepage": "https://github.com/khrome/where-parser",
-    "version": "0.0.1-alpha",
+    "version": "0.0.2-alpha",
     "main": "where-parser.js",
     "description": "A utility for parsing SQL where clauses",
     "keywords": [
@@ -20,7 +20,7 @@
         "url": "git@github.com:khrome/where-parser.git"
     },
     "dependencies": {
-        "prime": "*"
+        "prime": "0.0.5-alpha"
     },
     "devDependencies": {
         "mocha": "*",
