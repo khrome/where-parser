@@ -1,11 +1,8 @@
-var prime = require('prime');
-var type = require('prime/util/type');
-var array = require('prime/es5/array');
-var fn = require('prime/es5/function');
-array.contains = function(haystack, needle){
+var array_contains = function(haystack, needle){
     return haystack.indexOf(needle) != -1;
 };
-var WhereParser = prime({
+var WhereParser = function(){};
+WhereParser.prototype = {
     blockOpen : '(',
     blockClose : ')',
     escapeOpen : '\'',
@@ -20,11 +17,11 @@ var WhereParser = prime({
         var blocks = this.parse_blocks(clause);
         var phrases = this.parse_compound_phrases(blocks, []);
         var object = this;
-        var mapFunction = function(value){
-            if(type(value) == 'array'){
+        var parsed = phrases.map(function mapFunction(value){
+            if(Array.isArray(value)){
                 return value.map(mapFunction);
             }else{
-                if(array.contains(object.sentinels, value.toLowerCase())){
+                if(array_contains(object.sentinels, value.toLowerCase())){
                     return {
                         type : 'conjunction',
                         value : value
@@ -33,8 +30,7 @@ var WhereParser = prime({
                     return object.parse_discriminant(value);
                 }
             }
-        };
-        var parsed = phrases.map(mapFunction);
+        });
         return parsed;
     },
     parse_discriminant : function(text){
@@ -50,11 +46,11 @@ var WhereParser = prime({
                 inQuote = false;
                 continue;
             }
-            if( (!inQuote) && array.contains(this.textEscape, ch)){
+            if( (!inQuote) && array_contains(this.textEscape, ch)){
                 inQuote = ch;
                 continue;
             }
-            if(array.contains(this.operators, ch)){
+            if(array_contains(this.operators, ch)){
                 operator += ch;
                 continue;
             }
@@ -91,7 +87,7 @@ var WhereParser = prime({
                 if(text.trim() !== '') env.push(text);
                 var newEnvironment = [];
                 env.push(newEnvironment);
-                stack.push(this.env);
+                stack.push(this.env || env);
                 env = newEnvironment;
                 text = '';
                 continue;
@@ -109,15 +105,18 @@ var WhereParser = prime({
         return root;
     },
     parse_compound_phrases : function(data, result){
-        array.forEach(data, fn.bind(function(item){
-            var theType = type(item);
+        var ob = this;
+        data.forEach(function(item){
+            var theType = Array.isArray(item)?'array':typeof item;
             if(theType == 'array'){
-                var results = this.parse_compound_phrases(item, []);
+                var results = ob.parse_compound_phrases(item, []);
                 result.push(results);
             }else if(theType == 'string'){
-                result = this.parse_compound_phrase(item);
+                result = result.concat(ob.parse_compound_phrase(item)).filter(function(item){
+                    return item !==  '';
+                });
             }
-        }, this));
+        });
         return result;
     },
     parse_compound_phrase : function(clause){
@@ -133,13 +132,13 @@ var WhereParser = prime({
                 current = '';
                 if(ch === escape) inText = false;
             }else{
-                if(array.contains(this.textEscape, ch)){
+                if(array_contains(this.textEscape, ch)){
                     inText = true;
                     escape = ch;
                 }
                 if(ch != ' '){
                     current += ch;
-                    if(array.contains(this.sentinels, current.toLowerCase())){
+                    if(array_contains(this.sentinels, current.toLowerCase())){
                         results.push(current);
                         results.push('');
                         current = '';
@@ -154,5 +153,6 @@ var WhereParser = prime({
         if(results[results.length-1] === '') results.pop();
         return results;
     }
-});
+};
+WhereParser.prototype.constructor = WhereParser;
 module.exports = WhereParser;
