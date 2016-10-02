@@ -1,7 +1,7 @@
 {
     "name": "where-parser",
     "homepage": "https://github.com/khrome/where-parser",
-    "version": "0.1.0",
+    "version": "0.1.1",
     "main": "where-parser.js",
     "description": "A utility for parsing SQL where clauses",
     "keywords": [

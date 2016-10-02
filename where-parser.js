@@ -61,7 +61,7 @@ WhereParser.prototype = {
             type : 'expression',
             key : key,
             operator : operator,
-            value : value
+            value : JSON.parse(value)
         };
     },
     parse_blocks : function(parseableText){
