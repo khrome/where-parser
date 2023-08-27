@@ -4,7 +4,7 @@ import { chai } from '@environment-safe/chai';
 import { WhereParser } from '../src/index.mjs';
 const should = chai.should();
 
-describe('mangrove', ()=>{
+describe('where-parser', ()=>{
     describe('performs a simple test suite', ()=>{
         let parser;
         
