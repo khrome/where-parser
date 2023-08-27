@@ -1,8 +1,25 @@
 {
     "name": "where-parser",
     "homepage": "https://github.com/khrome/where-parser",
-    "version": "0.1.1",
-    "main": "where-parser.js",
+    "version": "1.0.0",
+    "type": "module",
+    "main": "dist/index.mjs",
+    "module": "src/index.mjs",
+    "commonjs": "dist/index.cjs",
+    "exports": {
+        ".": {
+            "import": "./src/index.mjs",
+            "require": "./dist/index.cjs"
+        },
+        "./src/index.mjs": {
+            "import": "./src/index.mjs",
+            "require": "./dist/index.cjs"
+        },
+        "./dist/index.cjs": {
+            "import": "./src/index.mjs",
+            "require": "./dist/index.cjs"
+        }
+    },
     "description": "A utility for parsing SQL where clauses",
     "keywords": [
         "SQL",
@@ -14,18 +31,72 @@
     "bugs": {
         "url": "https://github.com/khrome/where-parser/issues"
     },
+    "moka": {
+        "firefox": {
+            "engine": "@open-automaton/playwright-mining-engine",
+            "options": {
+                "type": "firefox"
+            }
+        },
+        "chrome": {
+            "engine": "@open-automaton/playwright-mining-engine",
+            "options": {
+                "type": "chromium"
+            }
+        },
+        "safari": {
+            "engine": "@open-automaton/playwright-mining-engine",
+            "options": {
+                "type": "webkit"
+            }
+        },
+        "stub": "node_modules/@open-automaton/moka/src/stub.mjs",
+        "stubs": [
+            "express",
+            "module",
+            "path"
+        ],
+        "shims": {
+            "chai": "node_modules/chai/chai.js",
+            "browser-or-node": "node_modules/browser-or-node/src/index.js"
+        }
+    },
     "license": "MIT",
-    "repository": {
-        "type": "git",
-        "url": "git@github.com:khrome/where-parser.git"
+    "devDependencies": {
+        "@babel/cli": "^7.22.5",
+        "@babel/core": "^7.22.5",
+        "@babel/plugin-transform-modules-commonjs": "^7.22.5",
+        "@environment-safe/chai": "^0.1.0",
+        "@environment-safe/commonjs-builder": "^0.0.3",
+        "@environment-safe/jsdoc-builder": "^0.0.2",
+        "babel-plugin-search-and-replace": "^1.1.1",
+        "babel-plugin-transform-import-meta": "^2.2.0",
+        "chai": "^4.3.7",
+        "eslint": "^8.43.0",
+        "husky": "^8.0.3",
+        "mocha": "^10.2.0"
+    },
+    "scripts": {
+        "lint": "./node_modules/.bin/eslint src/*.mjs test/*.mjs",
+        "test": "npm run import-test; npm run browser-test; npm run require-test",
+        "import-test": "./node_modules/.bin/mocha test/test.mjs",
+        "require-test": "./node_modules/.bin/mocha test/test.cjs",
+        "build-commonjs": "./node_modules/@environment-safe/commonjs-builder/bin/build.mjs",
+        "local-server": "open 'http://localhost:8085/' ; npx http-server -p 8085",
+        "headless-browser-test": "npm run headless-chrome-test; npm run headless-firefox-test; npm run headless-safari-test",
+        "headless-chrome-test": "moka --server . --browser chrome --relaxed --prefix ../ test/test.mjs",
+        "headless-firefox-test": "moka --server . --browser firefox --relaxed --prefix ../ test/test.mjs",
+        "headless-safari-test": "moka --server . --browser safari --relaxed --prefix ../ test/test.mjs",
+        "browser-test": "moka --server . --local-browser --relaxed --prefix ../ test/test.mjs",
+        "container-test": "docker build . -t environment-safe-package.json -f ./containers/test.dockerfile; docker logs --follow \"$(docker run -d environment-safe-package.json)\"",
+        "build-docs": "build-jsdoc docs",
+        "build-types": "build-jsdoc types",
+        "add-generated-files-to-commit": "git add docs/*.md; git add src/*.d.ts; git add dist/*.cjs",
+        "prepare": "husky install"
     },
     "dependencies": {
-    },
-    "devDependencies": {
-        "mocha": "*",
-        "should": "*"
-    },
-    "optionalDependencies": {
+        "@open-automaton/moka": "^0.0.4",
+        "browser-or-node": "^2.1.1"
     },
     "engines": {
         "node": "*"

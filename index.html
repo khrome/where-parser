@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <link rel="icon" href="/favicon.ico">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Loading...</title>
+        <style>
+          body{
+            padding: 0px;
+            margin: 0px;
+            width:100%; 
+            height: 100%;
+            overflow: hidden;
+          }
+          #forkme{
+              position: absolute;
+              top: 0px;
+              right: 0px;
+              display: block;
+          }
+        </style>
+        <script type="importmap">{ "imports" :{
+            "browser-or-node":"https://unpkg.com/browser-or-node@2.1.1/src/index.js", 
+            "@environment-safe/package" : "https://unpkg.com/@environment-safe/package@0.1.3/src/index.mjs",
+            "module": "https://unpkg.com/browser-or-node@2.1.1/src/index.js",
+            "node:events": "https://unpkg.com/extended-emitter@1.3.2/node-events.mjs",
+            "path": "https://unpkg.com/browser-or-node@2.1.1/src/index.js"
+        }}</script>
+        <script
+            type="module"
+            src="https://cdn.jsdelivr.net/gh/zerodevx/zero-md@2/dist/zero-md.min.js"
+          ></script>
+        <script type="module">
+            import { getPackage } from '@environment-safe/package';
+            const pkgReady = getPackage();
+            const ready = Promise.all([
+                pkgReady, 
+                new Promise((resolve)=>{
+                    window.pkgDone = resolve;
+                })
+            ]);
+            const getUrl = (repository)=>{
+                if(repository.url && repository.url.indexOf('://') !==-1) return repository.url;
+                if(repository.url){
+                    if(repository.url.indexOf('git@') === 0){
+                        const parts = repository.url.substring(4).split(':');
+                        if(parts[1].indexOf('.git') !== -1){
+                            parts[1] = parts[1].substring(0, parts[1].length-4);
+                        }
+                        switch(parts[0]){
+                            case 'github.com' : return `https://github.com/${parts[1]}`;
+                            default: throw new Error(`Unknown source`);
+                        }
+                        console.log(parts);
+                    }
+                }
+            }
+            const pkg = await pkgReady;
+            window.pkg = pkg;
+            console.log(pkg);
+            await ready;
+            document.title = pkg.name;
+            document.write(`<a style="position: absolute; top: 0px; right: 0px; display: block;" id="forkme" href="${getUrl(pkg.repository)}" class="ribbon"><img decoding="async" loading="lazy" width="149" height="149" src="https://github.blog/wp-content/uploads/2008/12/forkme_right_red_aa0000.png?resize=149%2C149" alt="Fork me on GitHub" data-recalc-dims="1"></a>`)
+            document.write(`<h1>${pkg.name}@${pkg.version}</h1>`);
+            document.write(`<table><tr>`);
+            document.write(`<td><a href="docs/">Documentation</a><a href="test/">Tests</a></td>`);
+            document.write(`</tr></table>`);
+            document.write(`<p>${pkg.description}</p>`);
+            document.write(`<zero-md src="README.md"></zero-md>`)
+        </script>
+    </head>
+    <body onload="window.pkgDone()"></body>
+</html>

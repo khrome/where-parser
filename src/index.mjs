@@ -1,7 +1,15 @@
-var array_contains = function(haystack, needle){
+/**
+ * A JSON object
+ * @typedef { object } JSON
+ */
+const array_contains = function(haystack, needle){
     return haystack.indexOf(needle) != -1;
 };
-var WhereParser = function(){};
+/**
+ * Creates a new WhereParser.
+ * @class
+ */
+export const WhereParser = function(){};
 WhereParser.prototype = {
     blockOpen : '(',
     blockClose : ')',
@@ -10,14 +18,20 @@ WhereParser.prototype = {
     sentinels : ['and', 'or', '&&', '||'],
     operators : ['=', '<', '>', '!'],
     textEscape : ['\''],
+    /** 
+     * @function
+     * @name parse
+     * @param {string} query - SQL where predicate to be parsed
+     * @returns { JSON }
+     */
     parse : function(query){
         return this.parse_where(query);
     },
     parse_where : function(clause){
-        var blocks = this.parse_blocks(clause);
-        var phrases = this.parse_compound_phrases(blocks, []);
-        var object = this;
-        var parsed = phrases.map(function mapFunction(value){
+        let blocks = this.parse_blocks(clause);
+        let phrases = this.parse_compound_phrases(blocks, []);
+        let object = this;
+        let parsed = phrases.map(function mapFunction(value){
             if(Array.isArray(value)){
                 return value.map(mapFunction);
             }else{
@@ -25,7 +39,7 @@ WhereParser.prototype = {
                     return {
                         type : 'conjunction',
                         value : value
-                    }
+                    };
                 }else{
                     return object.parse_discriminant(value);
                 }
@@ -34,13 +48,12 @@ WhereParser.prototype = {
         return parsed;
     },
     parse_discriminant : function(text){
-        var key = '';
-        var operator = '';
-        var value = '';
-        var inQuote = false;
-        var openQuote = '';
-        var ch;
-        for(var lcv=0; lcv < text.length; lcv++){
+        let key = '';
+        let operator = '';
+        let value = '';
+        let inQuote = false;
+        let ch;
+        for(let lcv=0; lcv < text.length; lcv++){
             ch = text[lcv];
             if(inQuote && ch === inQuote){
                 inQuote = false;
@@ -61,17 +74,17 @@ WhereParser.prototype = {
             type : 'expression',
             key : key,
             operator : operator,
-            value : JSON.parse(value)
+            value : value
         };
     },
     parse_blocks : function(parseableText){
-        var ch;
-        var env = [];
-        var stack = [];
-        var textMode = false;
-        var text = '';
-        var root = env;
-        for(var lcv=0; lcv < parseableText.length; lcv++){
+        let ch;
+        let env = [];
+        let stack = [];
+        let textMode = false;
+        let text = '';
+        let root = env;
+        for(let lcv=0; lcv < parseableText.length; lcv++){
             ch = parseableText[lcv];
             if(textMode){
                 text += ch;
@@ -85,7 +98,7 @@ WhereParser.prototype = {
             }
             if(ch === this.blockOpen){
                 if(text.trim() !== '') env.push(text);
-                var newEnvironment = [];
+                let newEnvironment = [];
                 env.push(newEnvironment);
                 stack.push(this.env || env);
                 env = newEnvironment;
@@ -94,7 +107,8 @@ WhereParser.prototype = {
             }
             if(ch === this.blockClose){
                 if(text.trim() !== '') env.push(text);
-                delete env;
+                //delete env;
+                env = null;
                 env = stack.pop();
                 text = '';
                 continue;
@@ -105,11 +119,11 @@ WhereParser.prototype = {
         return root;
     },
     parse_compound_phrases : function(data, result){
-        var ob = this;
+        let ob = this;
         data.forEach(function(item){
-            var theType = Array.isArray(item)?'array':typeof item;
+            let theType = Array.isArray(item)?'array':typeof item;
             if(theType == 'array'){
-                var results = ob.parse_compound_phrases(item, []);
+                let results = ob.parse_compound_phrases(item, []);
                 result.push(results);
             }else if(theType == 'string'){
                 result = result.concat(ob.parse_compound_phrase(item)).filter(function(item){
@@ -120,12 +134,12 @@ WhereParser.prototype = {
         return result;
     },
     parse_compound_phrase : function(clause){
-        var inText = false;
-        var escape = '';
-        var current = '';
-        var results = [''];
-        var ch;
-        for(var lcv=0; lcv < clause.length; lcv++){
+        let inText = false;
+        let escape = '';
+        let current = '';
+        let results = [''];
+        let ch;
+        for(let lcv=0; lcv < clause.length; lcv++){
             ch = clause[lcv];
             if(inText){
                 results[results.length-1] += current+ch;
@@ -155,4 +169,3 @@ WhereParser.prototype = {
     }
 };
 WhereParser.prototype.constructor = WhereParser;
-module.exports = WhereParser;
